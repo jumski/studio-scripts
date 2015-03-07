@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo setfdprm /dev/sdc sect=10 hd ssize=1024 cyl=80 

@@ -1,6 +1,5 @@
-#!/usr/local/bin/php -q
-
-<?
+#!/usr/bin/php -q
+<?php
 /*  AKAI S2000/S3000/S900 Disk Image Editor v1.1.2
  *  Copyright (C) 2004 Michael Kane <mick@checkoutwax.com>
  *

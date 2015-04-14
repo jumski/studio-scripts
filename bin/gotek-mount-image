@@ -1,0 +1,7 @@
+#!/bin/bash
+
+image=$1
+
+mkdir -p mnt/$image
+
+sudo mount -t vfat -o loop $image mnt/$image/

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo sudo dd if=/dev/sdc1 of=/home/jumski/work/studio-scripts/gotek.img count=1474560 iflag=count_bytes
+echo '1440*1024'

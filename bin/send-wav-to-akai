@@ -1,0 +1,61 @@
+#!/bin/bash
+
+sds_temp_file=/tmp/send-wav-to-akai-temp-file.sds
+wav_temp_file=/tmp/send-wav-to-akai-temp-file.wav
+
+skipped=0
+total=$( ls -l "$@" | wc -l )
+
+is_16bit() {
+  sndfile-info "$1" | grep 'Bit Width' 2>&1 >/dev/null | grep 16 2>&1 >/dev/null
+}
+
+is_pcm() {
+  sndfile-info "$1" | grep WAVE_FORMAT_PCM 2>&1 >/dev/null
+}
+
+is_mono() {
+  sndfile-info "$1" | grep Channels 2>&1 >/dev/null | grep 1 2>&1 >/dev/null
+}
+
+is_valid_wav() {
+  true
+  # is_pcm "$1" && is_mono "$1" && is_16bit "$1"
+}
+
+send_wav_to_akai() {
+  wav_path="$1"
+
+  rm -rf $sds_temp_file
+
+  if ! is_mono "$wav_path"; then
+    echo   - Converting "$wav_path" to MONO
+    sox "$wav_path" "$wav_temp_file" remix 1,2
+    wav_path="$wav_temp_file"
+  fi
+
+  if is_valid_wav '$wav_path'; then
+    echo   - Converting '$wav_path' to SDS
+    sndfile-convert "$wav_path" $sds_temp_file
+
+    echo   - Sending file via MIDI SDS
+    send-sds hw:3,0,0 0 $midi_ch "${sds_temp_file}"
+  else
+    echo ERROR: '$wav_path' is not MONO 16bit PCM WAV, skipping
+    skipped=$(( $skipped + 1 ))
+  fi
+}
+
+midi_ch=1
+for i in "$@"; do
+  echo
+  echo '============================================='
+
+  send_wav_to_akai "$i" $midi_ch
+  midi_ch=$(( $midi_ch + 1 ))
+done
+
+echo
+echo TOTAL:   $total
+echo SKIPPED: $skipped
+echo SENT:    $(( $total - $skipped ))

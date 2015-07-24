@@ -1,0 +1,79 @@
+#!/bin/bash
+
+
+print_keymap() {
+echo """
+  enter or spacebar   play sample
+		  n   skip to and play next sample
+		  w   save sample to list and go to next sample
+		  p   go and play previous sample
+		  s   show sample file contents
+		  q   quit
+"""
+}
+help() {
+HELP="""
+Allows previewing list of samples and adding choosen ones to text files
+
+= Usage
+
+$(print_keymap)
+"""
+
+echo -e "$HELP"
+}
+
+
+shift # remove filename from args
+num_of_args=$#
+current_arg=1
+
+play_sample() {
+  aplay --quiet "$1" &
+}
+
+inc_current_arg() {
+  if [[ $current_arg != $num_of_args ]]; then
+    echo inc 
+    echo num_of_args \= $num_of_args
+    current_arg=$(( $current_arg + 1 ))
+  fi
+}
+
+dec_current_arg() {
+  if [[ $current_arg != 0 ]]; then
+    # echo dec
+    # echo num_of_args \= $num_of_args
+    current_arg=$(( $current_arg - 1 ))
+  fi
+}
+
+process_command() {
+  case "$1" in
+    n) 
+      inc_current_arg 
+      ;;
+
+    p) 
+      dec_current_arg
+      ;;
+
+    w) 
+      write_current
+      inc_current_arg 
+      ;;
+
+  esac
+}
+
+# while read -r -n1 c; do
+while IFS= read -r -n1 c 2>&1 >/dev/null; do
+  process_command $c
+
+  clear
+  play_sample "${!current_arg}" 
+  echo
+  echo sample \#$current_arg
+
+  echo   "${!current_arg}"
+done
